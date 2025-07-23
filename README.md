@@ -76,22 +76,5 @@ La solution calcule alors :
 
 ---
 
-## 📌 Exemple d’interface
 
-👉 L’utilisateur remplit un formulaire étape par étape  
-👉 La logique applique une répartition intelligente  
-👉 Un tableau final est généré et prêt à l’export
-
-*(Une démo peut être intégrée ici : capture d’écran ou lien)*
-
----
-
-## 📎 À propos
-
-Développé par : `Aryhaz` (stagiaire chez Reetain)  
-Encadré par l’équipe projet Salesforce Marketing Cloud  
-Date de démarrage : Juillet 2025  
-Statut : 🟡 Prototype (v0 prêt à l’usage interne)
-
----
 
