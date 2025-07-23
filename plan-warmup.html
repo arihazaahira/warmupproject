@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plan Warm-Up Multi ESP</title>
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+      --primary-color: #45b7d1;
+      --dark-bg: rgba(18, 18, 18, 0.95);
+      --card-bg: rgba(30, 30, 30, 0.8);
+      --text-light: rgba(255, 255, 255, 0.9);
+      --text-muted: rgba(255, 255, 255, 0.6);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+      margin: 0; 
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: var(--dark-bg);
+      backdrop-filter: blur(20px);
+      padding: 40px;
+      border-radius: 24px;
+      box-shadow: 
+        0 32px 64px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, #ffffff, #b3b3b3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.2) drop-shadow(0 0 20px rgba(69, 183, 209, 0.5)); }
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 25px;
+      display: block;
+      color: var(--text-light);
+      font-size: 1.1em;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      margin-top: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(40, 40, 40, 0.8);
+      color: white;
+      font-size: 1em;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(69, 183, 209, 0.3);
+    }
+
+    .esp-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    .esp-row input[type=text] {
+      flex: 1 1 60%;
+    }
+
+    .esp-row input[type=number] {
+      flex: 1 1 40%;
+    }
+
+    button {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      margin-top: 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent
+      );
+      transition: left 0.6s ease;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    #output {
+      margin-top: 40px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    th {
+      background-color: rgba(69, 183, 209, 0.2);
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .week-column {
+      background-color: rgba(255, 193, 7, 0.1);
+      font-weight: 600;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .btn-group button {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    /* Style pour le PDF */
+    .pdf-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-family: Arial, sans-serif;
+    }
+    .pdf-table th, .pdf-table td {
+      border: 1px solid #333;
+      padding: 8px;
+      text-align: center;
+      color: #333;
+    }
+    .pdf-table th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+    .pdf-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .pdf-table tr:last-child {
+      background-color: #e8f4fd;
+      font-weight: bold;
+    }
+    .pdf-week-column {
+      background-color: #fff3cd;
+      font-weight: bold;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 30px 20px;
+      }
+      
+      h2 {
+        font-size: 2em;
+      }
+      
+      .esp-row {
+        flex-direction: column;
+      }
+      
+      .esp-row input[type=text],
+      .esp-row input[type=number] {
+        width: 100%;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+      }
+      
+      .btn-group button {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <!-- Import de html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Générateur de Plan Warm-Up Email - Multi ESP</h2>
+    
+    <label for="weeksInput">Nombre de semaines :</label>
+    <input type="number" id="weeksInput" min="1" max="12" value="4" />
+
+    <label for="daysPerWeekInput">Nombre de jours par semaine :</label>
+    <input type="number" id="daysPerWeekInput" min="1" max="7" value="3" />
+
+    <label>Volumes cibles par ESP (ex: Gmail 1000, Outlook 500) :</label>
+    <div id="espInputs">
+      <div class="esp-row">
+        <input type="text" placeholder="Nom ESP" class="espName" />
+        <input type="number" placeholder="Volume cible" class="espVolume" min="1" />
+      </div>
+      <div class="esp-row">
+        <input type="text" placeholder="Nom ESP" class="espName" />
+        <input type="number" placeholder="Volume cible" class="espVolume" min="1" />
+      </div>
+    </div>
+    <button onclick="addESP()">+ Ajouter un ESP</button>
+    <button onclick="generatePlan()">Générer le plan</button>
+
+    <div id="output"></div>
+    
+    <div class="btn-group">
+      <button id="csvBtn" onclick="downloadCSV()" disabled>📥 Télécharger CSV</button>
+      <button id="pdfBtn" onclick="exportPDF()" disabled>📄 Télécharger PDF</button>
+    </div>
+  </div>
+
+<script>
+  // Variables globales
+  let generatedPlan = null;
+  let generatedDays = 0;
+  let espVolumesCibles = {};
+  let espNames = [];
+  let weeksCount = 0;
+  let daysPerWeekCount = 0;
+
+  function addESP(){
+    const container = document.getElementById('espInputs');
+    const div = document.createElement('div');
+    div.classList.add('esp-row');
+    div.innerHTML = `
+      <input type="text" placeholder="Nom ESP" class="espName" />
+      <input type="number" placeholder="Volume cible" class="espVolume" min="1" />
+    `;
+    container.appendChild(div);
+  }
+
+  function generatePlan(){
+    const weeks = parseInt(document.getElementById('weeksInput').value);
+    const daysPerWeek = parseInt(document.getElementById('daysPerWeekInput').value);
+    if(weeks < 1 || daysPerWeek < 1){
+      alert("Nombre de semaines et jours par semaine doivent être >= 1");
+      return;
+    }
+
+    weeksCount = weeks;
+    daysPerWeekCount = daysPerWeek;
+
+    // Récupérer les noms des ESP
+    const espNameInputs = document.querySelectorAll('.espName');
+    const espVolumeInputs = document.querySelectorAll('.espVolume');
+    
+    espNames = [];
+    const espVolumesRaw = [];
+    
+    for(let i = 0; i < espNameInputs.length; i++){
+      const name = espNameInputs[i].value.trim();
+      const volume = parseInt(espVolumeInputs[i].value);
+      
+      if(name && !isNaN(volume) && volume > 0){
+        espNames.push(name);
+        espVolumesRaw.push(volume);
+      }
+    }
+    
+    if(espNames.length === 0){
+      alert("Merci d'entrer au moins un ESP valide avec un nom et un volume");
+      return;
+    }
+
+    // Créer l'objet ESP avec volumes
+    const esps = {};
+    espVolumesCibles = {};
+    for(let i = 0; i < espNames.length; i++){
+      esps[espNames[i]] = espVolumesRaw[i];
+      espVolumesCibles[espNames[i]] = espVolumesRaw[i];
+    }
+
+    const factor = 1.3;
+    const totalDays = weeks * daysPerWeek;
+
+    generatedPlan = {};
+    generatedDays = totalDays;
+
+    // Générer le plan pour chaque ESP
+    for(let esp of espNames){
+      const volume = esps[esp];
+      let plan = [];
+      let joursProgression = totalDays - daysPerWeek;
+
+      let start = volume / Math.pow(factor, joursProgression - 1);
+      if(start < 1) start = 1;
+
+      for(let j = 0; j < joursProgression; j++){
+        let val = Math.round(start * Math.pow(factor, j));
+        if(val > volume) val = volume;
+        plan.push(val);
+      }
+
+      for(let j = 0; j < daysPerWeek; j++){
+        plan.push(volume);
+      }
+
+      if(plan.length < generatedDays){
+        plan = plan.concat(Array(generatedDays - plan.length).fill(volume));
+      } else if(plan.length > generatedDays){
+        plan = plan.slice(0, generatedDays);
+      }
+
+      generatedPlan[esp] = plan;
+    }
+
+    displayPlan();
+    
+    // Activer les boutons de téléchargement
+    document.getElementById('csvBtn').disabled = false;
+    document.getElementById('pdfBtn').disabled = false;
+  }
+
+  function getWeekNumber(dayIndex) {
+    return Math.floor(dayIndex / daysPerWeekCount) + 1;
+  }
+
+  function displayPlan() {
+    let html = "<table><thead><tr><th>Semaine</th><th>Jour</th>";
+    for(let esp of espNames){
+      html += `<th>${esp}</th>`;
+    }
+    html += "</tr></thead><tbody>";
+
+    for(let day = 0; day < generatedDays; day++){
+      const weekNumber = getWeekNumber(day);
+      html += `<tr><td class="week-column">${weekNumber}</td><td>${day + 1}</td>`;
+      for(let esp of espNames){
+        html += `<td>${generatedPlan[esp][day]}</td>`;
+      }
+      html += "</tr>";
+    }
+
+    html += "<tr style='font-weight:bold; background:rgba(69, 183, 209, 0.1);'>";
+    html += "<td class='week-column'>-</td><td>Audience totale</td>";
+    for(let esp of espNames){
+      html += `<td>${espVolumesCibles[esp]}</td>`;
+    }
+    html += "</tr>";
+
+    html += "</tbody></table>";
+
+    document.getElementById('output').innerHTML = html;
+  }
+
+  function downloadCSV(){
+    if(!generatedPlan || espNames.length === 0) {
+      alert("Génère d'abord un plan");
+      return;
+    }
+
+    let csv = "Semaine,Jour," + espNames.join(",") + "\n";
+    for(let day = 0; day < generatedDays; day++){
+      const weekNumber = getWeekNumber(day);
+      let row = [weekNumber, day + 1];
+      for(let esp of espNames){
+        row.push(generatedPlan[esp][day]);
+      }
+      csv += row.join(",") + "\n";
+    }
+
+    // Ajouter la ligne totale
+    csv += "-,Audience totale," + espNames.map(esp => espVolumesCibles[esp]).join(",") + "\n";
+
+    let blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "plan_warmup.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function exportPDF() {
+    if (!generatedPlan || espNames.length === 0) {
+      alert("Génère d'abord un plan");
+      return;
+    }
+
+    // Créer le contenu HTML pour le PDF avec les données actuelles
+    let tableRows = '';
+    for(let day = 0; day < generatedDays; day++){
+      const weekNumber = getWeekNumber(day);
+      tableRows += `<tr><td class="pdf-week-column">${weekNumber}</td><td>${day + 1}</td>`;
+      for(let esp of espNames){
+        tableRows += `<td>${generatedPlan[esp][day]}</td>`;
+      }
+      tableRows += `</tr>`;
+    }
+
+    // Ligne des totaux
+    let totalRow = '<tr style="font-weight: bold; background-color: #e8f4fd;"><td class="pdf-week-column">-</td><td>Audience totale</td>';
+    for(let esp of espNames){
+      totalRow += `<td>${espVolumesCibles[esp]}</td>`;
+    }
+    totalRow += '</tr>';
+
+    const pdfContent = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+        <h2 style="text-align: center; color: #2c3e50; margin-bottom: 10px;">Plan Warm-Up Email</h2>
+        <p style="text-align: center; margin-bottom: 20px;">Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
+        
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th>Semaine</th>
+              <th>Jour</th>
+              ${espNames.map(esp => `<th>${esp}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+            ${totalRow}
+          </tbody>
+        </table>
+        
+        <p style="margin-top: 30px; font-size: 0.8em; text-align: center; color: #666;">
+          Plan généré automatiquement - Warm-Up Email Tool
+        </p>
+      </div>
+    `;
+
+    // Options pour le PDF
+    const opt = {
+      margin:       [10, 10, 10, 10],
+      filename:     'plan_warmup.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { 
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      },
+      jsPDF:        { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: espNames.length > 3 ? 'landscape' : 'portrait'
+      }
+    };
+
+    // Créer un élément temporaire pour le PDF
+    const element = document.createElement('div');
+    element.innerHTML = pdfContent;
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
+    element.style.top = '-9999px';
+    element.style.backgroundColor = '#ffffff';
+    document.body.appendChild(element);
+
+    // Générer le PDF
+    html2pdf()
+      .set(opt)
+      .from(element)
+      .save()
+      .then(() => {
+        // Nettoyer après génération
+        document.body.removeChild(element);
+        console.log('PDF généré avec succès');
+      })
+      .catch((error) => {
+        console.error('Erreur lors de la génération du PDF:', error);
+        document.body.removeChild(element);
+        alert('Erreur lors de la génération du PDF. Veuillez réessayer.');
+      });
+  }
+</script>
+</body>
+</html>
