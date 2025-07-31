@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Warm-Up Email</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            --primary-color: #45b7d1;
+            --dark-bg: rgba(18, 18, 18, 0.95);
+            --card-bg: rgba(30, 30, 30, 0.8);
+            --text-light: rgba(255, 255, 255, 0.9);
+            --text-muted: rgba(255, 255, 255, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 10px;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+
+        .config-panel {
+            background: var(--dark-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px 24px;
+            width: 100%;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(69, 183, 209, 0.15);
+            color: white;
+            border: 2px solid rgba(69, 183, 209, 0.4);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 8px 16px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 44px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            background: rgba(69, 183, 209, 0.3);
+            border-color: rgba(69, 183, 209, 0.7);
+            box-shadow: 
+                0 12px 24px rgba(0, 0, 0, 0.4),
+                0 0 20px rgba(69, 183, 209, 0.3);
+        }
+
+        .back-btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+            padding-top: 20px;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                opacity: 0.8;
+                transform: translateX(-50%) scaleX(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) scaleX(1.2);
+            }
+        }
+
+        .header h2 {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff, #b3b3b3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2) drop-shadow(0 0 20px rgba(69, 183, 209, 0.5)); }
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: var(--text-muted);
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .question-container {
+            background: var(--card-bg);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .question-container:hover {
+            transform: translateY(-2px);
+            border-color: rgba(69, 183, 209, 0.5);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .question-container label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
+        .question-container .icon {
+            font-size: 1.2em;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        select {
+            flex: 1;
+            background: rgba(40, 40, 40, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 1em;
+            color: white;
+            appearance: none;
+            transition: all 0.3s ease;
+            min-height: 44px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(69, 183, 209, 0.3);
+        }
+
+        select option {
+            background: #2a2a2a;
+            padding: 10px;
+        }
+
+        .pref-btn, .submit-btn, .alert-btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            white-space: nowrap;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pref-btn {
+            background: rgba(69, 183, 209, 0.2);
+            border: 1px solid rgba(69, 183, 209, 0.5);
+            flex-shrink: 0;
+        }
+
+        .pref-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1em;
+            margin-top: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Overlay et Alert */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: var(--dark-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 90vw;
+            width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            z-index: 101;
+            display: none;
+            transition: transform 0.3s ease;
+        }
+
+        .alert h3 {
+            font-size: 1.5em;
+            margin-bottom: 16px;
+            color: white;
+            text-align: center;
+        }
+
+        .alert p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .alert-btn {
+            display: block;
+            margin: 0 auto;
+            padding: 12px 30px;
+        }
+
+        /* Table styles for preferences */
+        .case-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.85em;
+        }
+
+        .case-table th, .case-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            word-wrap: break-word;
+        }
+
+        .case-table th {
+            background: rgba(69, 183, 209, 0.1);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .case-table tr:hover td {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .highlight-box, .warning-box {
+            padding: 12px;
+            border-radius: 10px;
+            margin: 16px 0;
+        }
+
+        .highlight-box {
+            background: rgba(21, 101, 192, 0.1);
+            border-left: 4px solid #1565c0;
+        }
+
+        .warning-box {
+            background: rgba(239, 108, 0, 0.1);
+            border-left: 4px solid #ef6c00;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px 5px;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+
+            .back-btn {
+                top: 15px;
+                left: 15px;
+                padding: 10px 16px;
+                font-size: 0.9em;
+                border-radius: 10px;
+                min-height: 40px;
+            }
+
+            .config-panel {
+                padding: 20px 16px;
+                border-radius: 12px;
+                margin-top: 0;
+            }
+
+            .header {
+                margin-bottom: 24px;
+                padding-top: 15px;
+            }
+            
+            .header h2 {
+                font-size: 1.6em;
+                margin-bottom: 10px;
+            }
+
+            .header p {
+                font-size: 1em;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .pref-btn, select {
+                width: 100%;
+                min-height: 48px;
+            }
+
+            .pref-btn {
+                font-size: 0.9em;
+                padding: 14px 16px;
+            }
+            
+            .question-container {
+                padding: 20px 16px;
+                margin-bottom: 16px;
+            }
+
+            .question-container label {
+                font-size: 1em;
+                margin-bottom: 12px;
+            }
+            
+            .alert {
+                padding: 20px 16px;
+                width: 95vw;
+                max-width: none;
+            }
+
+            .alert h3 {
+                font-size: 1.3em;
+            }
+
+            .case-table {
+                font-size: 0.75em;
+            }
+
+            .case-table th, .case-table td {
+                padding: 8px 6px;
+            }
+
+            .case-table th:first-child,
+            .case-table td:first-child {
+                width: 35%;
+            }
+
+            .case-table th:nth-child(2),
+            .case-table td:nth-child(2) {
+                width: 25%;
+            }
+
+            .case-table th:last-child,
+            .case-table td:last-child {
+                width: 40%;
+            }
+
+            .highlight-box, .warning-box {
+                padding: 10px;
+                margin: 12px 0;
+            }
+
+            .highlight-box p, .warning-box p {
+                font-size: 0.9em;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 480px) {
+            .back-btn {
+                top: 12px;
+                left: 12px;
+                padding: 8px 14px;
+                font-size: 0.85em;
+                border-radius: 8px;
+                min-height: 36px;
+            }
+
+            .header h2 {
+                font-size: 1.4em;
+            }
+
+            .case-table {
+                font-size: 0.7em;
+            }
+
+            .case-table th, .case-table td {
+                padding: 6px 4px;
+            }
+
+            .alert {
+                padding: 16px 12px;
+            }
+        }
+
+        /* Large screens */
+        @media (min-width: 1200px) {
+            .config-panel {
+                padding: 48px 40px;
+                border-radius: 24px;
+            }
+
+            .header h2 {
+                font-size: 2.5em;
+            }
+
+            .header p {
+                font-size: 1.2em;
+            }
+
+            .question-container {
+                padding: 32px;
+                border-radius: 20px;
+            }
+
+            .question-container label {
+                font-size: 1.3em;
+                margin-bottom: 20px;
+            }
+
+            .alert {
+                max-width: 900px;
+                padding: 40px;
+            }
+        }
+
+        @keyframes fadeOutDown {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+            }
+        }
+      
+    /* Style pour le lien de retour */
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 30px;
+      padding: 15px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 1em;
+      font-weight: 500;
+      border-radius: 8px;
+      background: rgba(69, 183, 209, 0.1);
+      border: 1px solid rgba(69, 183, 209, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+      color: white;
+      background: rgba(69, 183, 209, 0.2);
+      border-color: rgba(69, 183, 209, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(69, 183, 209, 0.2);
+    }
+
+    .back-link:active {
+      transform: translateY(0);
+    }
+      
+    </style>
+</head>
+<body>
+
+        <div class="config-panel">
+            <div class="header">
+                <h2>📧 Configuration Warm-Up Email</h2>
+                <p>Configurez votre stratégie de warm-up pour vos campagnes email marketing</p>
+            </div>
+
+            <form id="questionForm">
+                <div class="question-container">
+                    <label><span class="icon">📅</span>Connaissez-vous le nombre de semaines ?</label>
+                    <div class="input-group">
+                        <select id="q1" required>
+                            <option value="">-- Sélectionnez votre réponse --</option>
+                            <option value="oui">Oui</option>
+                            <option value="non">Non</option>
+                        </select>
+                        <button type="button" class="pref-btn" onclick="showPreferences('semaines')">
+                            Guide semaines
+                        </button>
+                    </div>
+                </div>
+
+                <div class="question-container">
+                    <label><span class="icon">📊</span>Connaissez-vous le nombre de jours ?</label>
+                    <div class="input-group">
+                        <select id="q2" required>
+                            <option value="">-- Sélectionnez votre réponse --</option>
+                            <option value="oui">Oui</option>
+                            <option value="non">Non</option>
+                        </select>
+                        <button type="button" class="pref-btn" onclick="showPreferences('jours')">
+                            Guide jours
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    Continuer vers mon plan warm-up 🚀
+                </button>
+            </form>
+            <a href="Accueil.html" class="back-link">
+      ← Retour à la page précédente
+    </a>
+        </div>
+ 
+
+  
+    </div>
+
+    <!-- Overlay et Alert -->
+    <div class="overlay" id="overlay"></div>
+    <div class="alert" id="customAlert">
+        <h3>📞 Assistance Requise</h3>
+        <p>Merci de contacter un expert en délivrabilité pour une configuration assistée personnalisée.</p>
+        <p>Nos spécialistes vous aideront à définir la stratégie de warm-up optimale selon votre infrastructure.</p>
+        <button class="alert-btn" onclick="closeAlert()">Compris</button>
+    </div>
+
+    <!-- Modal Préférences -->
+    <div class="overlay" id="prefOverlay"></div>
+    <div class="alert" id="prefModal">
+        <h3 id="prefTitle">📋 Préférences</h3>
+        <div id="prefContent"></div>
+        <button class="alert-btn" onclick="closePrefModal()">Fermer</button>
+    </div>
+
+    <script>
+        document.getElementById('questionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const q1 = document.getElementById('q1').value;
+            const q2 = document.getElementById('q2').value;
+            
+            if (q1 === "oui" && q2 === "oui") {
+                document.querySelector('.config-panel').style.animation = 'fadeOutDown 0.5s ease-in';
+                setTimeout(() => {
+                    window.location.href = "https://mct8vv9h4h0gy1x8xmv8np06rlpy.pub.sfmc-content.com/n5t0sorf4sv";
+                }, 500);
+            } else if (q1 === "oui" && q2 === "non") {
+                document.querySelector('.config-panel').style.animation = 'fadeOutDown 0.5s ease-in';
+                setTimeout(() => {
+                    window.location.href = "https://mct8vv9h4h0gy1x8xmv8np06rlpy.pub.sfmc-content.com/syy25hrcxci";
+                }, 500);
+            } else if (q1 === "non" && q2 === "oui") {
+                document.querySelector('.config-panel').style.animation = 'fadeOutDown 0.5s ease-in';
+                setTimeout(() => {
+                    window.location.href = "https://mct8vv9h4h0gy1x8xmv8np06rlpy.pub.sfmc-content.com/dzu5jc3byeg";
+                }, 500);
+            } else if (q1 === "non" && q2 === "non") {
+                document.querySelector('.config-panel').style.animation = 'fadeOutDown 0.5s ease-in';
+                setTimeout(() => {
+                    window.location.href = "https://mct8vv9h4h0gy1x8xmv8np06rlpy.pub.sfmc-content.com/klabrift0nx";
+                }, 500);
+            } else {
+                showAlert();
+            }
+        });
+
+        function showPreferences(type) {
+            const prefOverlay = document.getElementById('prefOverlay');
+            const prefModal = document.getElementById('prefModal');
+            const prefTitle = document.getElementById('prefTitle');
+            const prefContent = document.getElementById('prefContent');
+            
+            if (type === 'semaines') {
+                prefTitle.textContent = '📅 Guide Expert - Durée de Warm-Up Email (Semaines)';
+                prefContent.innerHTML = `
+                    <div style="text-align: left; line-height: 1.6;">
+                        <table class="case-table">
+                            <thead>
+                                <tr>
+                                    <th>📋 Cas</th>
+                                    <th>📅 Durée suggérée</th>
+                                    <th>📝 Remarques</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>🔹 <strong>Nouvelle IP / Domaine froid</strong></td>
+                                    <td>4 à 6 semaines</td>
+                                    <td>Progression lente, surveillance accrue</td>
+                                </tr>
+                                <tr>
+                                    <td>🔹 <strong>Nouvelle IP / Audience moyenne</strong></td>
+                                    <td>3 à 4 semaines</td>
+                                    <td>Volume modéré, montée progressive</td>
+                                </tr>
+                                <tr>
+                                    <td>🔹 <strong>Nouvelle IP / Grande audience</strong></td>
+                                    <td>4 à 6 semaines</td>
+                                    <td>Important de contrôler les engagements</td>
+                                </tr>
+                                <tr>
+                                    <td>🔹 <strong>IP existante mais peu utilisée</strong></td>
+                                    <td>2 à 3 semaines</td>
+                                    <td>Re-warm-up plus rapide possible</td>
+                                </tr>
+                                <tr>
+                                    <td>🔹 <strong>IP existante avec historique sain</strong></td>
+                                    <td>1 à 2 semaines</td>
+                                    <td>Relance courte si bon engagement</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="highlight-box">
+                            <p style="margin: 0; color: #1565c0;"><strong>💡 Conseil Expert :</strong> La patience pendant le warm-up est cruciale. Précipiter le processus peut compromettre définitivement la réputation de votre IP.</p>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'jours') {
+                prefTitle.textContent = '📊 Guide Expert - Fréquence de Warm-Up Email (Jours par semaine)';
+                prefContent.innerHTML = `
+                    <div style="text-align: left; line-height: 1.6;">
+                        <table class="case-table">
+                            <thead>
+                                <tr>
+                                    <th>📋 Cas</th>
+                                    <th>📊 Jours/semaine</th>
+                                    <th>📈 Progression recommandée</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>🔹 <strong>Nouvelle IP / Domaine froid</strong></td>
+                                    <td>3 à 5 jours</td>
+                                    <td>Commencer par 50-100 emails/jour</td>
+                                </tr>
+                                <tr>
+                                    <td>🔹 <strong>Nouvelle IP / Audience moyenne</strong></td>
+                                    <td>4 à 5 jours</td>
+                                    <td>Progression de 100 à 1000 emails/jour</td>
+                                </tr>
+                                <tr>
+                                    <td>🔹 <strong>Nouvelle IP / Grande audience</strong></td>
+                                    <td>5 à 6 jours</td>
+                                    <td>Surveiller taux d'engagement étroitement</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="warning-box">
+                            <p style="margin: 0; color: #ef6c00;"><strong>⚠️ Attention :</strong> Ne jamais envoyer 7j/7 pendant le warm-up. Les ISP préfèrent des patterns d'envoi naturels (jours ouvrés).</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            prefOverlay.style.display = 'block';
+            prefModal.style.display = 'block';
+            
+            setTimeout(() => {
+                prefOverlay.style.opacity = '1';
+                prefModal.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 10);
+        }
+
+        function closePrefModal() {
+            const prefOverlay = document.getElementById('prefOverlay');
+            const prefModal = document.getElementById('prefModal');
+            
+            prefOverlay.style.opacity = '0';
+            prefModal.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            
+            setTimeout(() => {
+                prefOverlay.style.display = 'none';
+                prefModal.style.display = 'none';
+            }, 300);
+        }
+
+        function showAlert(customMessage = null, customTitle = null) {
+            const overlay = document.getElementById('overlay');
+            const alert = document.getElementById('customAlert');
+            
+            if (customMessage) {
+                alert.querySelector('h3').textContent = customTitle || '📞 Assistance Requise';
+                alert.querySelector('p').textContent = customMessage;
+                alert.querySelector('p:last-of-type').style.display = 'none';
+            } else {
+                alert.querySelector('h3').textContent = '📞 Assistance Requise';
+                alert.querySelector('p').textContent = 'Merci de contacter un expert en délivrabilité pour une configuration assistée personnalisée.';
+                alert.querySelector('p:last-of-type').style.display = 'block';
+            }
+            
+            overlay.style.display = 'block';
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                overlay.style.opacity = '1';
+                alert.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 10);
+        }
+
+        function closeAlert() {
+            const overlay = document.getElementById('overlay');
+            const alert = document.getElementById('customAlert');
+            
+            overlay.style.opacity = '0';
+            alert.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                alert.style.display = 'none';
+            }, 300);
+        }
+
+        document.getElementById('overlay').addEventListener('click', closeAlert);
+        document.getElementById('prefOverlay').addEventListener('click', closePrefModal);
+
+        const selects = document.querySelectorAll('select');
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                this.style.borderColor = this.value ? '#28a745' : '#ddd';
+            });
+        });
+    </script>
+</body>
+</html>

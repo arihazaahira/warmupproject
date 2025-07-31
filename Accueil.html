@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Warm-up Pro - Configuration Intelligente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Background animations */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
+            z-index: -2;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(120, 219, 255, 0.8);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .config-panel {
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 32px 24px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+            border-radius: 2px;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                opacity: 0.8;
+                transform: translateX(-50%) scaleX(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translateX(-50%) scaleX(1.2);
+            }
+        }
+
+        .logo {
+            font-size: 3em;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2) drop-shadow(0 0 20px rgba(69, 183, 209, 0.5)); }
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff, #b3b3b3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .header p {
+            font-size: 1em;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .option-card {
+            background: rgba(30, 30, 30, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .option-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(30, 30, 30, 0.4);
+        }
+
+        .option-card.disabled:hover {
+            transform: none !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            box-shadow: none !important;
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.1), 
+                transparent
+            );
+            transition: left 0.6s ease;
+        }
+
+        .option-card:hover::before {
+            left: 100%;
+        }
+
+        .option-card.disabled::before {
+            display: none;
+        }
+
+        .option-card:hover:not(.disabled) {
+            transform: translateY(-4px) scale(1.01);
+            border-color: rgba(69, 183, 209, 0.5);
+            box-shadow: 
+                0 12px 24px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(69, 183, 209, 0.2);
+        }
+
+        .option-card.selected:not(.disabled) {
+            border-color: #45b7d1;
+            background: rgba(69, 183, 209, 0.1);
+            transform: translateY(-2px) scale(1.005);
+            box-shadow: 
+                0 8px 16px rgba(0, 0, 0, 0.3),
+                0 0 16px rgba(69, 183, 209, 0.3);
+        }
+
+        .option-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .option-info {
+            flex: 1;
+        }
+
+        .option-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: pulse 2s ease-in-out infinite;
+            margin-bottom: 12px;
+        }
+
+        .option-card.disabled .option-icon {
+            background: rgba(100, 100, 100, 0.5);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        .option-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option-card.disabled .option-title {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .coming-soon {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: 500;
+            border: 1px solid rgba(255, 165, 0, 0.3);
+        }
+
+        .option-subtitle {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 400;
+            margin-bottom: 12px;
+        }
+
+        .option-card.disabled .option-subtitle {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .option-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 0.9em;
+        }
+
+        .option-card.disabled .option-description {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .option-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .feature-tag {
+            background: rgba(69, 183, 209, 0.2);
+            color: #45b7d1;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.75em;
+            font-weight: 500;
+            border: 1px solid rgba(69, 183, 209, 0.3);
+        }
+
+        .option-card.disabled .feature-tag {
+            background: rgba(100, 100, 100, 0.2);
+            color: rgba(255, 255, 255, 0.4);
+            border-color: rgba(100, 100, 100, 0.3);
+        }
+
+        .custom-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+
+        .option-card.disabled .custom-radio {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .option-card.selected:not(.disabled) .custom-radio {
+            border-color: #45b7d1;
+            background: rgba(69, 183, 209, 0.2);
+        }
+
+        .option-card.selected:not(.disabled) .custom-radio::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #45b7d1;
+            animation: radioCheck 0.3s ease;
+        }
+
+        @keyframes radioCheck {
+            from {
+                transform: translate(-50%, -50%) scale(0);
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .cta-section {
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .continue-btn {
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            opacity: 0.5;
+            pointer-events: none;
+            min-width: 240px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .continue-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .continue-btn:hover.active {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .continue-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.2), 
+                transparent
+            );
+            transition: left 0.6s ease;
+        }
+
+        .continue-btn:hover.active::before {
+            left: 100%;
+        }
+
+        .radio-input {
+            display: none;
+        }
+
+        /* Loading animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(69, 183, 209, 0.3);
+            border-top: 3px solid #45b7d1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px 10px;
+                align-items: flex-start;
+                padding-top: 30px;
+            }
+
+            .config-panel {
+                padding: 24px 20px;
+                border-radius: 16px;
+                margin: 0;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .logo {
+                font-size: 2.5em;
+            }
+
+            .header p {
+                font-size: 0.9em;
+            }
+            
+            .options-grid {
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+            
+            .option-card {
+                padding: 20px;
+            }
+
+            .option-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+
+            .option-title {
+                font-size: 1.1em;
+            }
+
+            .option-description {
+                font-size: 0.85em;
+            }
+
+            .feature-tag {
+                font-size: 0.7em;
+                padding: 3px 8px;
+            }
+
+            .continue-btn {
+                padding: 14px 32px;
+                font-size: 1em;
+                min-width: 200px;
+            }
+
+            .custom-radio {
+                width: 18px;
+                height: 18px;
+            }
+        }
+
+        /* Tablet and Desktop */
+        @media (min-width: 769px) {
+            .container {
+                padding: 40px;
+            }
+            
+            .config-panel {
+                max-width: 1000px;
+                padding: 48px 40px;
+                border-radius: 24px;
+            }
+            
+            .options-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 32px;
+            }
+            
+            .option-card {
+                min-height: 260px;
+                padding: 32px;
+            }
+            
+            .header h1 {
+                font-size: 3.2em;
+            }
+
+            .logo {
+                font-size: 4em;
+            }
+
+            .header p {
+                font-size: 1.2em;
+            }
+
+            .option-icon {
+                width: 64px;
+                height: 64px;
+                font-size: 32px;
+            }
+
+            .option-title {
+                font-size: 1.5em;
+            }
+
+            .option-description {
+                font-size: 1em;
+            }
+
+            .continue-btn {
+                padding: 20px 48px;
+                font-size: 1.3em;
+                min-width: 280px;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px 8px;
+                padding-top: 20px;
+            }
+
+            .config-panel {
+                padding: 20px 16px;
+            }
+
+            .header h1 {
+                font-size: 1.6em;
+            }
+
+            .logo {
+                font-size: 2.2em;
+            }
+
+            .option-card {
+                padding: 16px;
+            }
+
+            .option-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .custom-radio {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="config-panel">
+            <div class="header">
+                <div class="logo">📧</div>
+                <h1>Email Warm-up Pro</h1>
+                <p>Configuration intelligente de votre stratégie d'échauffement email pour maximiser la délivrabilité</p>
+            </div>
+
+            <div class="options-grid">
+                <div class="option-card" data-value="expert">
+                    <div class="option-header">
+                        <div class="option-info">
+                            <div class="option-icon">🎯</div>
+                            <div class="option-title">Mode Expert</div>
+                            <div class="option-subtitle">Configuration avancée</div>
+                        </div>
+                        <div class="custom-radio"></div>
+                    </div>
+                    <div class="option-description">
+                        Vous maîtrisez les concepts d'email marketing et connaissez vos volumes d'envoi, fréquences et objectifs de délivrabilité. Configuration directe et personnalisée.
+                    </div>
+                    <div class="option-features">
+                        <span class="feature-tag">Paramétrage manuel</span>
+                        <span class="feature-tag">Contrôle total</span>
+                        <span class="feature-tag">Analytics avancés</span>
+                    </div>
+                    <input type="radio" name="config" value="expert" class="radio-input">
+                </div>
+
+                <div class="option-card disabled" data-value="guided">
+                    <div class="option-header">
+                        <div class="option-info">
+                            <div class="option-icon">🧭</div>
+                            <div class="option-title">
+                                Mode Guidé
+                                <span class="coming-soon">Prochainement</span>
+                            </div>
+                            <div class="option-subtitle">Assistant intelligent (en développement)</div>
+                        </div>
+                        <div class="custom-radio"></div>
+                    </div>
+                    <div class="option-description">
+                        Notre système analysera votre profil et vous guidera à travers un questionnaire intelligent pour créer la stratégie warm-up optimale. Fonctionnalité en cours de développement.
+                    </div>
+                    <div class="option-features">
+                        <span class="feature-tag">Recommandations IA</span>
+                        <span class="feature-tag">Questionnaire smart</span>
+                        <span class="feature-tag">Optimisation auto</span>
+                    </div>
+                    <input type="radio" name="config" value="guided" class="radio-input" disabled>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <button class="continue-btn" id="continueBtn">
+                    Sélectionnez une option 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        // Configuration variables
+        const optionCards = document.querySelectorAll('.option-card');
+        const continueBtn = document.getElementById('continueBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        let selectedOption = null;
+
+        // Créer les particules animées
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = window.innerWidth < 768 ? 30 : 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Gestion de la sélection des options
+        optionCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Ignorer si la carte est désactivée
+                if (this.classList.contains('disabled')) {
+                    return;
+                }
+
+                // Animation de sélection
+                optionCards.forEach(c => {
+                    c.classList.remove('selected');
+                    if (!c.classList.contains('disabled')) {
+                        c.style.transform = 'translateY(0) scale(1)';
+                    }
+                });
+                
+                this.classList.add('selected');
+                selectedOption = this.dataset.value;
+                
+                // Animation de confirmation
+                this.style.transform = 'translateY(-2px) scale(1.005)';
+                
+                // Activer le bouton
+                continueBtn.classList.add('active');
+                continueBtn.innerHTML = getButtonText(selectedOption);
+                
+                // Effet sonore visuel
+                const radio = this.querySelector('.custom-radio');
+                radio.style.animation = 'radioCheck 0.3s ease';
+                
+                // Marquer le radio input
+                const radioInput = this.querySelector('.radio-input');
+                radioInput.checked = true;
+            });
+
+            // Effet hover amélioré (seulement pour les cartes non désactivées)
+            card.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('selected') && !this.classList.contains('disabled')) {
+                    this.style.transform = 'translateY(-4px) scale(1.01)';
+                }
+            });
+
+            card.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('selected') && !this.classList.contains('disabled')) {
+                    this.style.transform = 'translateY(0) scale(1)';
+                }
+            });
+        });
+
+        // Texte du bouton selon l'option
+        function getButtonText(option) {
+            const texts = {
+                'expert': 'Configuration avancée 🎯',
+                'guided': 'Démarrer l\'assistant 🧭'
+            };
+            return texts[option] || 'Continuer 🚀';
+        }
+
+        // Gestion du clic sur continuer
+        continueBtn.addEventListener('click', function() {
+            if (!selectedOption || selectedOption === 'guided') return;
+
+            // Animation de chargement
+            loadingOverlay.style.display = 'flex';
+            
+            // Animation de sortie de la panel
+            document.querySelector('.config-panel').style.animation = 'slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) reverse';
+            
+            setTimeout(() => {
+                // Redirection pour le mode expert
+                if (selectedOption === 'expert') {
+                    window.location.href = 'https://mct8vv9h4h0gy1x8xmv8np06rlpy.pub.sfmc-content.com/knvngefakcu';
+                }
+            }, 800);
+        });
+
+        // Animations au chargement
+        window.addEventListener('load', function() {
+            createParticles();
+            
+            // Animation du titre
+            const title = document.querySelector('.header h1');
+            const originalText = title.textContent;
+            typeWriter(title, originalText, 80);
+            
+            // Animation séquentielle des cartes
+            optionCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(40px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 200 + (index * 150));
+            });
+        });
+
+        // Effet de typing sur le titre
+        function typeWriter(element, text, speed = 50) {
+            let i = 0;
+            element.innerHTML = '';
+            
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        // Effet parallaxe subtil (désactivé sur mobile)
+        if (window.innerWidth > 768) {
+            document.addEventListener('mousemove', function(e) {
+                const mouseX = e.clientX / window.innerWidth;
+                const mouseY = e.clientY / window.innerHeight;
+                
+                document.querySelector('.bg-gradient').style.transform = 
+                    `translate(${mouseX * 20 - 10}px, ${mouseY * 20 - 10}px)`;
+            });
+        }
+
+        // Raccourcis clavier
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '1') {
+                optionCards[0].click(); // Mode Expert
+            }
+            
+            if (e.key === 'Enter' && selectedOption && selectedOption !== 'guided') {
+                continueBtn.click();
+            }
+        });
+
+        // Gestion du redimensionnement pour recréer les particules
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                const particlesContainer = document.getElementById('particles');
+                particlesContainer.innerHTML = '';
+                createParticles();
+            }, 300);
+        });
+    </script>
+</body>
+</html>

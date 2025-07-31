@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plan Warm-Up Multi ESP</title>
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+      --primary-color: #45b7d1;
+      --dark-bg: rgba(18, 18, 18, 0.95);
+      --card-bg: rgba(30, 30, 30, 0.8);
+      --text-light: rgba(255, 255, 255, 0.9);
+      --text-muted: rgba(255, 255, 255, 0.6);
+      --error-color: #ff6b6b;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+      margin: 0; 
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: var(--dark-bg);
+      backdrop-filter: blur(20px);
+      padding: 40px;
+      border-radius: 24px;
+      box-shadow: 
+        0 32px 64px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, #ffffff, #b3b3b3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.2) drop-shadow(0 0 20px rgba(69, 183, 209, 0.5)); }
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 25px;
+      display: block;
+      color: var(--text-light);
+      font-size: 1.1em;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      margin-top: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(40, 40, 40, 0.8);
+      color: white;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(69, 183, 209, 0.3);
+    }
+
+    input.error {
+      border-color: var(--error-color);
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3);
+    }
+
+    .error-message {
+      color: var(--error-color);
+      font-size: 0.9em;
+      margin-top: 5px;
+      display: none;
+    }
+
+    /* Configuration inputs - layout en colonnes pour desktop */
+    .config-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .config-field {
+      flex: 1;
+    }
+
+    .config-field label {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .esp-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      align-items: flex-start;
+    }
+
+    .esp-row .esp-name-container {
+      flex: 1 1 60%;
+    }
+
+    .esp-row input[type=number] {
+      flex: 1 1 40%;
+    }
+
+    .esp-row .remove-btn {
+      background: var(--error-color);
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-top: 12px;
+    }
+
+    .esp-row .remove-btn:hover {
+      background: #ff5252;
+      transform: scale(1.05);
+    }
+
+    button {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      margin-top: 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent
+      );
+      transition: left 0.6s ease;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    #output {
+      margin-top: 40px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    th {
+      background-color: rgba(69, 183, 209, 0.2);
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .week-column {
+      background-color: rgba(255, 193, 7, 0.1);
+      font-weight: 600;
+    }
+
+    .date-column {
+      background-color: rgba(52, 152, 219, 0.1);
+      font-weight: 500;
+      min-width: 100px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .btn-group button {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 30px;
+      padding: 15px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 1em;
+      font-weight: 500;
+      border-radius: 8px;
+      background: rgba(69, 183, 209, 0.1);
+      border: 1px solid rgba(69, 183, 209, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+      color: white;
+      background: rgba(69, 183, 209, 0.2);
+      border-color: rgba(69, 183, 209, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(69, 183, 209, 0.2);
+    }
+
+    .date-info {
+      background: rgba(69, 183, 209, 0.1);
+      border: 1px solid rgba(69, 183, 209, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .date-info h3 {
+      margin: 0 0 10px 0;
+      color: var(--primary-color);
+    }
+
+    .date-info p {
+      margin: 5px 0;
+      color: var(--text-light);
+    }
+
+    /* Style pour le PDF */
+    .pdf-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-family: Arial, sans-serif;
+    }
+    .pdf-table th, .pdf-table td {
+      border: 1px solid #333;
+      padding: 8px;
+      text-align: center;
+      color: #333;
+    }
+    .pdf-table th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+    .pdf-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .pdf-table tr:last-child {
+      background-color: #e8f4fd;
+      font-weight: bold;
+    }
+    .pdf-week-column {
+      background-color: #fff3cd;
+      font-weight: bold;
+    }
+    .pdf-date-column {
+      background-color: #d1ecf1;
+      font-weight: 500;
+    }
+
+    /* Responsive - Mobile First */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+
+      .container {
+        padding: 25px 20px;
+      }
+      
+      h2 {
+        font-size: 2em;
+        margin-bottom: 25px;
+      }
+
+      .config-row {
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .config-field {
+        width: 100%;
+      }
+
+      .config-field input {
+        width: 100%;
+        max-width: 100%;
+      }
+      
+      .esp-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .esp-row .esp-name-container,
+      .esp-row input[type=number] {
+        width: 100%;
+        flex: none;
+      }
+
+      .esp-row .remove-btn {
+        margin-top: 0;
+        align-self: flex-start;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .btn-group button {
+        width: 100%;
+        min-width: unset;
+      }
+
+      .back-link {
+        margin-top: 25px;
+        padding: 12px;
+        font-size: 0.95em;
+      }
+
+      #output {
+        margin-top: 30px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 8px 6px;
+      }
+
+      label {
+        font-size: 1em;
+        margin-top: 20px;
+      }
+
+      input {
+        padding: 12px;
+        font-size: 16px;
+      }
+
+      button {
+        padding: 12px 20px;
+        font-size: 0.95em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px 15px;
+      }
+
+      h2 {
+        font-size: 1.8em;
+      }
+
+      input {
+        padding: 10px;
+      }
+
+      button {
+        padding: 10px 15px;
+      }
+
+      table {
+        font-size: 11px;
+      }
+
+      th, td {
+        padding: 6px 4px;
+      }
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Plan Warm-Up - Multi ESP</h2>
+    
+    <!-- Configuration en ligne pour desktop, en colonne pour mobile -->
+    <div class="config-row">
+      <div class="config-field">
+        <label for="startDateInput">Date de début :</label>
+        <input type="date" id="startDateInput" />
+      </div>
+      <div class="config-field">
+        <label for="weeksInput">Nombre de semaines :</label>
+        <input type="number" id="weeksInput" min="1" max="12" value="4" />
+      </div>
+      <div class="config-field">
+        <label for="daysPerWeekInput">Nombre de jours par semaine :</label>
+        <input type="number" id="daysPerWeekInput" min="1" max="7" value="3" />
+      </div>
+    </div>
+
+    <label>Volumes cibles par ESP (ex: Gmail 1000, Outlook 500) :</label>
+    <div id="espInputs">
+      <div class="esp-row">
+        <div class="esp-name-container">
+          <input type="text" placeholder="Nom ESP" class="espName" />
+          <div class="error-message">Ce nom d'ESP existe déjà</div>
+        </div>
+        <input type="number" placeholder="Volume cible" class="espVolume" min="1" />
+        <button type="button" class="remove-btn" onclick="removeESP(this)" style="display: none;">✕</button>
+      </div>
+      <div class="esp-row">
+        <div class="esp-name-container">
+          <input type="text" placeholder="Nom ESP" class="espName" />
+          <div class="error-message">Ce nom d'ESP existe déjà</div>
+        </div>
+        <input type="number" placeholder="Volume cible" class="espVolume" min="1" />
+        <button type="button" class="remove-btn" onclick="removeESP(this)" style="display: none;">✕</button>
+      </div>
+    </div>
+    <button onclick="addESP()">+ Ajouter un ESP</button>
+    <button onclick="generatePlan()">Générer le plan</button>
+
+    <div id="dateInfo"></div>
+    <div id="output"></div>
+    
+    <div class="btn-group">
+      <button id="csvBtn" onclick="downloadCSV()" disabled>📥 Télécharger CSV</button>
+    </div>
+    
+    <a href="javascript:history.back()" class="back-link">
+      ← Retour à la page précédente
+    </a>
+  </div>
+
+<script>
+  // Variables globales
+  let generatedPlan = null;
+  let generatedDays = 0;
+  let espVolumesCibles = {};
+  let espNames = [];
+  let weeksCount = 0;
+  let daysPerWeekCount = 0;
+  let startDate = null;
+  let endDate = null;
+  let planDates = [];
+
+  // Initialiser la date de début à aujourd'hui
+  document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+    document.getElementById('startDateInput').value = todayString;
+    
+    // Ajouter les événements de vérification sur les champs existants
+    const espNameInputs = document.querySelectorAll('.espName');
+    espNameInputs.forEach(input => {
+      input.addEventListener('input', checkDuplicates);
+      input.addEventListener('blur', checkDuplicates);
+    });
+    
+    updateRemoveButtons();
+  });
+
+  // Fonction pour générer les jours de la semaine selon la logique demandée
+  function generateWeekDays(daysPerWeek) {
+    const allDays = [1, 2, 3, 4, 5, 6, 7]; // Lundi à Dimanche (1=Lundi, 7=Dimanche)
+    let selectedDays = [];
+
+    if (daysPerWeek <= 3) {
+      // Pour 1-3 jours : essayer d'espacer les jours
+      if (daysPerWeek === 1) {
+        // 1 jour : choisir aléatoirement
+        selectedDays = [allDays[Math.floor(Math.random() * allDays.length)]];
+      } else if (daysPerWeek === 2) {
+        // 2 jours : espacer (ex: lundi/jeudi, mardi/vendredi, etc.)
+        const spacedCombinations = [
+          [1, 4], [1, 5], [1, 6], [1, 7], // Lundi + milieu/fin semaine
+          [2, 5], [2, 6], [2, 7], // Mardi + fin semaine
+          [3, 6], [3, 7], // Mercredi + weekend
+          [4, 7] // Jeudi + dimanche
+        ];
+        selectedDays = spacedCombinations[Math.floor(Math.random() * spacedCombinations.length)];
+      } else if (daysPerWeek === 3) {
+        // 3 jours : bien répartis
+        const spacedCombinations = [
+          [1, 3, 5], [1, 3, 6], [1, 3, 7], // Lundi + milieu + fin
+          [1, 4, 6], [1, 4, 7], [1, 5, 7], // Lundi + autres répartitions
+          [2, 4, 6], [2, 4, 7], [2, 5, 7], // Mardi + répartitions
+          [1, 2, 5], [1, 2, 6], [1, 2, 7]  // Début semaine + fin
+        ];
+        selectedDays = spacedCombinations[Math.floor(Math.random() * spacedCombinations.length)];
+      }
+    } else {
+      // Pour 4+ jours : sélection aléatoire parmi tous les jours
+      const shuffled = [...allDays].sort(() => Math.random() - 0.5);
+      selectedDays = shuffled.slice(0, daysPerWeek).sort((a, b) => a - b);
+    }
+
+    return selectedDays;
+  }
+
+  // Fonction pour obtenir le lundi d'une semaine donnée
+  function getMondayOfWeek(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Ajuster pour lundi
+    return new Date(d.setDate(diff));
+  }
+
+  // Fonction pour générer les dates du plan avec répartition aléatoire
+  function generatePlanDates(startDateStr, totalDays, daysPerWeek) {
+    const dates = [];
+    const start = new Date(startDateStr);
+    
+    // Calculer le nombre de semaines nécessaires
+    const weeksNeeded = Math.ceil(totalDays / daysPerWeek);
+    
+    // Trouver le lundi de la semaine de début
+    let currentMonday = getMondayOfWeek(start);
+    
+    let dayCount = 0;
+    
+    for (let week = 0; week < weeksNeeded && dayCount < totalDays; week++) {
+      // Générer les jours de la semaine pour cette semaine
+      const weekDays = generateWeekDays(daysPerWeek);
+      
+      // Calculer les jours restants à ajouter
+      const daysToAdd = Math.min(daysPerWeek, totalDays - dayCount);
+      
+      // Ajouter les dates pour cette semaine
+      for (let i = 0; i < daysToAdd; i++) {
+        const dayOfWeek = weekDays[i]; // 1=Lundi, 2=Mardi, etc.
+        const date = new Date(currentMonday);
+        date.setDate(currentMonday.getDate() + (dayOfWeek - 1));
+        
+        // Vérifier que la date n'est pas avant la date de début
+        if (date >= start) {
+          dates.push(new Date(date));
+          dayCount++;
+        }
+      }
+      
+      // Passer à la semaine suivante
+      currentMonday.setDate(currentMonday.getDate() + 7);
+    }
+    
+    // Si on a commencé en milieu de semaine et qu'on n'a pas assez de dates,
+    // ajuster avec la première semaine
+    if (dates.length < totalDays) {
+      const firstWeekMonday = getMondayOfWeek(start);
+      const weekDays = generateWeekDays(daysPerWeek);
+      
+      // Ajouter les dates manquantes de la première semaine si nécessaire
+      for (let i = 0; i < weekDays.length && dates.length < totalDays; i++) {
+        const dayOfWeek = weekDays[i];
+        const date = new Date(firstWeekMonday);
+        date.setDate(firstWeekMonday.getDate() + (dayOfWeek - 1));
+        
+        if (date >= start && !dates.some(d => d.getTime() === date.getTime())) {
+          dates.unshift(new Date(date));
+        }
+      }
+    }
+    
+    // Trier les dates et s'assurer qu'on a le bon nombre
+    dates.sort((a, b) => a - b);
+    return dates.slice(0, totalDays);
+  }
+
+  // Fonction pour formater une date
+  function formatDate(date) {
+    return date.toLocaleDateString('fr-FR', {
+      weekday: 'short',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  }
+
+  // Fonction pour vérifier les doublons
+  function checkDuplicates() {
+    const espNameInputs = document.querySelectorAll('.espName');
+    const usedNames = new Set();
+    let hasDuplicates = false;
+
+    espNameInputs.forEach(input => {
+      const name = input.value.trim().toLowerCase();
+      const errorMessage = input.parentNode.querySelector('.error-message');
+      
+      if (name && usedNames.has(name)) {
+        input.classList.add('error');
+        errorMessage.style.display = 'block';
+        hasDuplicates = true;
+      } else {
+        input.classList.remove('error');
+        errorMessage.style.display = 'none';
+        if (name) {
+          usedNames.add(name);
+        }
+      }
+    });
+
+    return !hasDuplicates;
+  }
+
+  // Fonction pour mettre à jour la visibilité des boutons de suppression
+  function updateRemoveButtons() {
+    const espRows = document.querySelectorAll('.esp-row');
+    espRows.forEach((row, index) => {
+      const removeBtn = row.querySelector('.remove-btn');
+      if (espRows.length > 2) {
+        removeBtn.style.display = 'block';
+      } else {
+        removeBtn.style.display = 'none';
+      }
+    });
+  }
+
+  function addESP(){
+    const container = document.getElementById('espInputs');
+    const div = document.createElement('div');
+    div.classList.add('esp-row');
+    div.innerHTML = `
+      <div class="esp-name-container">
+        <input type="text" placeholder="Nom ESP" class="espName" />
+        <div class="error-message">Ce nom d'ESP existe déjà</div>
+      </div>
+      <input type="number" placeholder="Volume cible" class="espVolume" min="1" />
+      <button type="button" class="remove-btn" onclick="removeESP(this)">✕</button>
+    `;
+    container.appendChild(div);
+    
+    const newInput = div.querySelector('.espName');
+    newInput.addEventListener('input', checkDuplicates);
+    newInput.addEventListener('blur', checkDuplicates);
+    
+    updateRemoveButtons();
+  }
+
+  function removeESP(button) {
+    const row = button.closest('.esp-row');
+    row.remove();
+    updateRemoveButtons();
+    checkDuplicates();
+  }
+
+  function generatePlan(){
+    const startDateInput = document.getElementById('startDateInput').value;
+    const weeks = parseInt(document.getElementById('weeksInput').value);
+    const daysPerWeek = parseInt(document.getElementById('daysPerWeekInput').value);
+
+    if (!startDateInput) {
+      alert("Veuillez sélectionner une date de début");
+      return;
+    }
+
+    if(weeks < 1 || daysPerWeek < 1){
+      alert("Nombre de semaines et jours par semaine doivent être >= 1");
+      return;
+    }
+
+    // Vérifier les doublons avant de générer le plan
+    if (!checkDuplicates()) {
+      alert("Veuillez corriger les doublons dans les noms d'ESP avant de générer le plan.");
+      return;
+    }
+
+    weeksCount = weeks;
+    daysPerWeekCount = daysPerWeek;
+    startDate = new Date(startDateInput);
+
+    // Récupérer les noms des ESP
+    const espNameInputs = document.querySelectorAll('.espName');
+    const espVolumeInputs = document.querySelectorAll('.espVolume');
+    
+    espNames = [];
+    const espVolumesRaw = [];
+    
+    for(let i = 0; i < espNameInputs.length; i++){
+      const name = espNameInputs[i].value.trim();
+      const volume = parseInt(espVolumeInputs[i].value);
+      
+      if(name && !isNaN(volume) && volume > 0){
+        espNames.push(name);
+        espVolumesRaw.push(volume);
+      }
+    }
+    
+    if(espNames.length === 0){
+      alert("Merci d'entrer au moins un ESP valide avec un nom et un volume");
+      return;
+    }
+
+    // Créer l'objet ESP avec volumes
+    const esps = {};
+    espVolumesCibles = {};
+    for(let i = 0; i < espNames.length; i++){
+      esps[espNames[i]] = espVolumesRaw[i];
+      espVolumesCibles[espNames[i]] = espVolumesRaw[i];
+    }
+
+    const factor = 1.3;
+    const totalDays = weeks * daysPerWeek;
+    generatedDays = totalDays;
+
+    // Générer les dates du plan
+    planDates = generatePlanDates(startDateInput, totalDays, daysPerWeek);
+    endDate = planDates[planDates.length - 1];
+
+    generatedPlan = {};
+
+    // Générer le plan pour chaque ESP
+    for(let esp of espNames){
+      const volume = esps[esp];
+      let plan = [];
+      let joursProgression = totalDays - daysPerWeek;
+
+      let start = volume / Math.pow(factor, joursProgression - 1);
+      if(start < 1) start = 1;
+
+      for(let j = 0; j < joursProgression; j++){
+        let val = Math.round(start * Math.pow(factor, j));
+        if(val > volume) val = volume;
+        plan.push(val);
+      }
+
+      for(let j = 0; j < daysPerWeek; j++){
+        plan.push(volume);
+      }
+
+      if(plan.length < generatedDays){
+        plan = plan.concat(Array(generatedDays - plan.length).fill(volume));
+      } else if(plan.length > generatedDays){
+        plan = plan.slice(0, generatedDays);
+      }
+
+      generatedPlan[esp] = plan;
+    }
+
+    displayDateInfo();
+    displayPlan();
+    
+    // Activer les boutons de téléchargement
+    document.getElementById('csvBtn').disabled = false;
+  }
+
+  function getWeekNumber(dateObj, startDate) {
+    const timeDiff = dateObj.getTime() - startDate.getTime();
+    const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+    return Math.floor(daysDiff / 7) + 1;
+  }
+
+  function displayDateInfo() {
+    const dateInfoHtml = `
+      <div class="date-info">
+        <h3>📅 Informations sur le planning</h3>
+        <p><strong>Date de début :</strong> ${formatDate(startDate)}</p>
+        <p><strong>Date de fin :</strong> ${formatDate(endDate)}</p>
+        <p><strong>Durée totale :</strong> ${generatedDays} jours d'envoi sur ${weeksCount} semaines</p>
+      </div>
+    `;
+    document.getElementById('dateInfo').innerHTML = dateInfoHtml;
+  }
+
+  function displayPlan() {
+    let html = "<table><thead><tr><th>Semaine</th><th>Date</th>";
+    for(let esp of espNames){
+      html += `<th>${esp}</th>`;
+    }
+    html += "</tr></thead><tbody>";
+
+    for(let day = 0; day < generatedDays; day++){
+      const weekNumber = getWeekNumber(planDates[day], startDate);
+      const dateStr = formatDate(planDates[day]);
+      html += `<tr><td class="week-column">${weekNumber}</td><td class="date-column">${dateStr}</td>`;
+      for(let esp of espNames){
+        html += `<td>${generatedPlan[esp][day]}</td>`;
+      }
+      html += "</tr>";
+    }
+
+    html += "<tr style='font-weight:bold; background:rgba(69, 183, 209, 0.1);'>";
+    html += "<td class='week-column'>-</td><td class='date-column'>Volume total</td>";
+    for(let esp of espNames){
+      html += `<td>${espVolumesCibles[esp]}</td>`;
+    }
+    html += "</tr>";
+
+    html += "</tbody></table>";
+
+    document.getElementById('output').innerHTML = html;
+  }
+
+  function downloadCSV(){
+    if(!generatedPlan || espNames.length === 0) {
+      alert("Génère d'abord un plan");
+      return;
+    }
+
+    let csv = "Semaine,Date," + espNames.join(",") + "\n";
+    for(let day = 0; day < generatedDays; day++){
+      const weekNumber = getWeekNumber(planDates[day], startDate);
+      const dateStr = planDates[day].toLocaleDateString('fr-FR');
+      let row = [weekNumber, dateStr];
+      for(let esp of espNames){
+        row.push(generatedPlan[esp][day]);
+      }
+      csv += row.join(",") + "\n";
+    }
+
+    // Ajouter la ligne totale
+    csv += "-,Volume total," + espNames.map(esp => espVolumesCibles[esp]).join(",") + "\n";
+
+    let blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "plan_warmup_dates.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+</script>
+</body>
+</html>
